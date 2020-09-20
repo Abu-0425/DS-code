@@ -1,9 +1,9 @@
 #include "sort.h"
 
+
 //int main()
 //{
-//	//带哨兵位的数组
-//	int arr[] = { 0, 9, 2, 6, 3, 7, 5, 1, 4, 8 };
+//	int arr[] = { 9, 2, 6, 3, 7, 5, 1, 4, 8 };
 //	int n = sizeof(arr) / sizeof(arr[0]);
 //
 //	printf("排序前: \n");
@@ -17,9 +17,30 @@
 //	return 0;
 //}
 
+//用于测试快排
 int main()
 {
-	int arr[] = { 9, 2, 6, 3, 7, 5, 1, 4, 8 };
+	int arr[] = { 6, 1, 2, 7, 9, 3, 4, 5, 10, 8 };
+	int n = sizeof(arr) / sizeof(arr[0]);
+
+	printf("排序前: \n");
+	PrintArray(arr, n);
+	TestQuickSort(arr, 0, n);
+	printf("排序后: \n");
+	PrintArray(arr, n);
+	TestSortEfficiency();
+
+	system("pause");
+	return 0;
+}
+
+
+/*
+//用于测试带哨兵位的排序
+int main()
+{
+	//带哨兵位的数组
+	int arr[] = { 0, 9, 2, 6, 3, 7, 5, 1, 4, 8 };
 	int n = sizeof(arr) / sizeof(arr[0]);
 
 	printf("排序前: \n");
@@ -32,3 +53,4 @@ int main()
 	system("pause");
 	return 0;
 }
+*/
