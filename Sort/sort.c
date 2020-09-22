@@ -256,12 +256,35 @@ void BubbleSort_1(int *arr, int n)
 		if (!is_swap) { //没有交换过，直接跳出循环
 			break;
 		}
+		else {
+			is_swap = false;
+		}
 	}
 }
 
+//三者取中
+int GetMidValIndex(int *arr, int left, int right)
+{
+	int mid = (left + right) / 2;
+	if (arr[left] > arr[mid] && arr[left] < arr[right]) {
+		return left;
+	}
+	else if (arr[mid] > arr[left] && arr[mid] < arr[right]) {
+		return mid;
+	}
+	else {
+		return right;
+	}
+}
+
+//hoare版本
 int Partition_1(int *arr, int left, int right)
 {
-	int key = arr[left];
+	int index = GetMidValIndex(arr, left, right);
+	if (index != left) {
+		Swap(&arr[left], &arr[index]);
+	}
+	int key = arr[left];//基准值
 
 	while (left < right) {
 		while (left < right && arr[right] >= key) {
@@ -273,17 +296,168 @@ int Partition_1(int *arr, int left, int right)
 		}
 		Swap(&arr[left], &arr[right]);
 	}
+	return left;//right同理
+}
+
+//挖坑法
+int Partition_2(int *arr, int left, int right)
+{
+	int index = GetMidValIndex(arr, left, right);
+	if (index != left) {
+		Swap(&arr[left], &arr[index]);
+	}
+	int key = arr[left];//基准值,并将其保存,相当于把它"挖走"
+	while (left < right) {
+		while (left < right && arr[right] >= key) {
+			right--;
+		}
+		arr[left] = arr[right];
+		while (left < right && arr[left] < key) {
+			left++;
+		}
+		arr[right] = arr[left];
+	}
+	arr[left] = key;
 	return left;
 }
 
+//前后指针法
+int Partition_3(int *arr, int left, int right)
+{
+	int index = GetMidValIndex(arr, left, right);
+	if (index != left) {
+		Swap(&arr[left], &arr[index]);
+	}
+	int key = arr[left];//基准值
+
+	int pos = left;
+	int i = left + 1;
+	for (; i <= right; i++) {
+		if (arr[i] < key) {
+			pos++;
+			if (i != pos) {
+				Swap(&arr[i], &arr[pos]);
+			}
+		}
+	}
+	Swap(&arr[left], &arr[pos]);
+	return pos;
+}
+
+//快速排序(三种版本)
 void QuickSort(int *arr, int left, int right)
 {
 	if (left >= right - 1) {
 		return;
 	}
-	int pos = Partition_1(arr, left, right - 1);
+	//int pos = Partition_1(arr, left, right - 1);
+	//int pos = Partition_2(arr, left, right - 1);
+	int pos = Partition_3(arr, left, right - 1);
 	QuickSort(arr, left, pos);
 	QuickSort(arr, pos + 1, right);
+}
+
+//归并排序的过程
+void _MergeSort(int *arr, int left, int right, int *tmp)
+{
+	//先分解
+	if (left >= right) {
+		return;
+	}
+	int mid = (left + right) / 2;
+	_MergeSort(arr, left, mid, tmp);
+	_MergeSort(arr, mid + 1, right, tmp);
+
+	//再归并
+	int begin1, end1, begin2, end2;
+	begin1 = left, end1 = mid;
+	begin2 = mid + 1, end2 = right;
+	int i = 0;
+	while (begin1 <= end1 && begin2 <= end2) {
+		if (arr[begin1] <= arr[begin2]) {
+			tmp[i++] = arr[begin1++];
+		}
+		else {
+			tmp[i++] = arr[begin2++];
+		}
+	}
+	while (begin1 <= end1) {
+		tmp[i++] = arr[begin1++];
+	}
+	while (begin2 <= end2) {
+		tmp[i++] = arr[begin2++];
+	}
+	memcpy(arr + left, tmp, sizeof(int)* (right - left + 1));
+}
+
+//归并排序
+void MergeSort(int *arr, int n)
+{
+	int *tmp = (int *)malloc(sizeof(int) * n);//申请临时空间
+	assert(tmp != NULL);
+
+	//归并排序的过程
+	_MergeSort(arr, 0, n - 1, tmp);
+
+	free(tmp);
+	tmp = NULL;
+}
+
+//基数排序
+#include "slist.h" //用到单链表及其中的部分方法
+#define RADIX 10
+SList list[RADIX];
+#define K 1 //排序数据的最大位数
+
+//获取关键值
+int GetKey(int value, int k)
+{
+	int key;
+	while (k >= 0) {
+		key = value % 10;
+		value /= 10;
+		k--;
+	}
+	return key;
+}
+
+void Distribute(int *arr, int n, int k)
+{
+	int i = 0;
+	for (; i < n; i++) {
+		int key = GetKey(arr[i], k);
+		SListPushBack(&list[key], arr[i]);
+	}
+}
+
+void Collect(int *arr)
+{
+	int k = 0;
+	for (int i = 0; i < RADIX; i++) {
+		while (!SListEmpty(list[i])) {
+			arr[k++] = SListFront(list[i]);
+			SListPopFront(&list[i]);
+		}
+	}
+}
+
+void RadixSort(int *arr, int n)
+{
+	for (int i = 0; i < RADIX; i++) {
+		SListInit(&list[i]);
+	}
+
+	for (int i = 0; i < K; i++) {
+		//分发
+		Distribute(arr, n, i);
+		//回收
+		Collect(arr);
+	}
+
+	//使用完毕之后摧毁单链表
+	for (int i = 0; i < RADIX; i++) {
+		SListDestory(&list[i]);
+	}
 }
 
 //测试排序
@@ -299,6 +473,8 @@ void TestSort(int *arr, int n)
 	//HeapSort(arr, n);
 	//BubbleSort(arr, n);
 	//BubbleSort_1(arr, n);
+	//MergeSort(arr, n);
+	RadixSort(arr, n);
 }
 
 //测试快排
@@ -322,6 +498,8 @@ void TestSortEfficiency()
 	int *a9 = (int *)malloc(sizeof(int)* n);
 	int *a10 = (int *)malloc(sizeof(int)* n);
 	int *a11 = (int *)malloc(sizeof(int)* n);
+	int *a12 = (int *)malloc(sizeof(int)* n);
+	int *a13 = (int *)malloc(sizeof(int)* n);
 
 	srand((unsigned int)time(NULL));
 	int i = 0;
@@ -337,6 +515,8 @@ void TestSortEfficiency()
 		a9[i] = a1[i];
 		a10[i] = a1[i];
 		a11[i] = a1[i];
+		a12[i] = a1[i];
+		a13[i] = a1[i];
 	}
 
 	time_t start = clock();
@@ -394,8 +574,14 @@ void TestSortEfficiency()
 	end = clock();
 	printf("QuickSortEff: %u\n", end - start);
 
+	start = clock();
+	MergeSort(a12, n);
+	end = clock();
+	printf("MergeSortEff: %u\n", end - start);
 
-	//end = clock();
-	//printf("QuickSortEff: %u\n", end - start);
+	start = clock();
+	RadixSort(a13, n);
+	end = clock();
+	printf("RadixSortEff: %u\n", end - start);
 
 }
