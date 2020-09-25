@@ -134,7 +134,34 @@ void TwoWayInsert(int *arr, int n)
 	tmp = NULL; //预防野指针
 }
 
-//希尔排序
+//希尔的插入排序
+//void ShellInsert(int *arr, int n, int dk)
+//{
+//	int i = dk;
+//	for (; i < n; i++) {
+//		if (arr[i] < arr[i - dk]) {
+//			int tmp = arr[i];
+//			int j = i - dk;
+//			while (j >= 0 && tmp < arr[j]) {
+//				arr[j + dk] = arr[j];
+//				j -= dk;
+//			}
+//			arr[j + dk] = tmp;
+//		}
+//	}
+//}
+//
+//int dlta[] = { 5, 3, 2, 1 }; //增量
+////希尔排序(初始版本)
+//void ShellSort(int *arr, int n, int dlta[], int t/*增量的个数*/)
+//{
+//	int i = 0;
+//	for (; i < t; i++) {
+//		ShellInsert(arr, n, dlta[i]);
+//	}
+//}
+
+//先进的希尔排序
 void ShellSort(int *arr, int n)
 {
 	int dk = n;
@@ -184,7 +211,7 @@ void SelectSort(int *arr, int n)
 }
 
 //向下调整算法
-void AdjustDwon(int *arr, int n, int curpos)
+void AdjustDown(int *arr, int n, int curpos)
 {
 	int i = curpos;
 	int j = 2 * i + 1; //左子树
@@ -212,7 +239,7 @@ void HeapSort(int *arr, int n)
 	//创建大堆
 	int cur = n / 2 - 1; //先指到最后一个分支
 	while (cur >= 0) {
-		AdjustDwon(arr, n, cur);
+		AdjustDown(arr, n, cur);
 		cur--;
 	}
 
@@ -220,7 +247,51 @@ void HeapSort(int *arr, int n)
 	int end = n - 1;//最后一个元素
 	while (end > 0) {
 		Swap(&arr[0], &arr[end]);
-		AdjustDwon(arr, end, 0);
+		AdjustDown(arr, end, 0);
+		end--;
+	}
+}
+
+//向下调整算法
+void AdjustDown_1(int *arr, int n, int curpos)
+{
+	int i = curpos; //当前调整的位置
+	int j = 2 * i + 1; //左子树
+
+	int tmp = arr[i];
+	while (j < n) { //左子树存在
+		if (j + 1 < n && arr[j] < arr[j + 1]) {
+			j++;//右子树存在并且大于左子树，指到右子树
+		}
+		if (tmp < arr[j]) {
+			// 向下调整
+			arr[i] = arr[j];
+			//指到下一个分支，继续判断是否需要调整
+			i = j;
+			j = 2 * i + 1;
+		}
+		else {
+			break;
+		}
+	}
+	arr[i] = tmp;
+}
+
+//堆排
+void HeapSort_1(int *arr, int n)
+{
+	//创建大堆
+	int cur = n / 2 - 1; //先指到最后一个分支
+	while (cur >= 0) {
+		AdjustDown_1(arr, n, cur);
+		cur--;
+	}
+
+	//排序
+	int end = n - 1;//最后一个元素
+	while (end > 0) {
+		Swap(&arr[0], &arr[end]);
+		AdjustDown_1(arr, end, 0);
 		end--;
 	}
 }
@@ -345,16 +416,22 @@ int Partition_3(int *arr, int left, int right)
 }
 
 //快速排序(三种版本)
+#define M 25 //如果待排序的数据量小于这个数，则采用直接插入排序，效率更高
 void QuickSort(int *arr, int left, int right)
 {
 	if (left >= right - 1) {
 		return;
 	}
-	//int pos = Partition_1(arr, left, right - 1);
-	//int pos = Partition_2(arr, left, right - 1);
-	int pos = Partition_3(arr, left, right - 1);
-	QuickSort(arr, left, pos);
-	QuickSort(arr, pos + 1, right);
+	if (right - left <= M) {
+		InsertSort_1(arr, right - left); //调用直接插入排序
+	}
+	else {
+		//int pos = Partition_1(arr, left, right - 1);
+		//int pos = Partition_2(arr, left, right - 1);
+		int pos = Partition_3(arr, left, right - 1);
+		QuickSort(arr, left, pos);
+		QuickSort(arr, pos + 1, right);
+	}
 }
 
 //归并排序的过程
@@ -405,9 +482,9 @@ void MergeSort(int *arr, int n)
 
 //基数排序
 #include "slist.h" //用到单链表及其中的部分方法
-#define RADIX 10
-SList list[RADIX];
-#define K 1 //排序数据的最大位数
+#define RADIX 10 //基数
+SList list[RADIX]; //链表数组
+#define K 3 //排序数据的最大位数
 
 //获取关键值
 int GetKey(int value, int k)
@@ -421,36 +498,39 @@ int GetKey(int value, int k)
 	return key;
 }
 
+//分发
 void Distribute(int *arr, int n, int k)
 {
 	int i = 0;
 	for (; i < n; i++) {
-		int key = GetKey(arr[i], k);
-		SListPushBack(&list[key], arr[i]);
+		int key = GetKey(arr[i], k);//获取当前数据的关键值(哪一位)
+		SListPushBack(&list[key], arr[i]);//分发数据至链表数组指定位置(尾插)
 	}
 }
 
+//回收
 void Collect(int *arr)
 {
 	int k = 0;
 	for (int i = 0; i < RADIX; i++) {
 		while (!SListEmpty(list[i])) {
-			arr[k++] = SListFront(list[i]);
-			SListPopFront(&list[i]);
+			arr[k++] = SListFront(list[i]); //回收链表的头部元素
+			SListPopFront(&list[i]); //回收后删除，更新头部元素
 		}
 	}
 }
 
+//基数排序
 void RadixSort(int *arr, int n)
 {
 	for (int i = 0; i < RADIX; i++) {
-		SListInit(&list[i]);
+		SListInit(&list[i]);//初始化单链表
 	}
 
 	for (int i = 0; i < K; i++) {
-		//分发
+		//K次分发
 		Distribute(arr, n, i);
-		//回收
+		//K次回收
 		Collect(arr);
 	}
 
@@ -471,6 +551,7 @@ void TestSort(int *arr, int n)
 	//ShellSort(arr, n);
 	//SelectSort(arr, n);
 	//HeapSort(arr, n);
+	//HeapSort_1(arr, n);
 	//BubbleSort(arr, n);
 	//BubbleSort_1(arr, n);
 	//MergeSort(arr, n);
@@ -555,9 +636,9 @@ void TestSortEfficiency()
 	printf("SelectSortEff: %u\n", end - start);
 
 	start = clock();
-	HeapSort(a8, n);
+	HeapSort_1(a8, n);
 	end = clock();
-	printf("HeapSortEff: %u\n", end - start);
+	printf("HeapSort_1Eff: %u\n", end - start);
 
 	start = clock();
 	BubbleSort(a9, n);
