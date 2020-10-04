@@ -5,22 +5,87 @@ void BinTreeInit(BinTree *t)//初始化二叉树
 	*t = NULL;
 }
 
-BinTree BinTreeCreate(BTDataType *a, int *i)//二叉树的字符串创建
+void BinTreeCreate(BinTree *t)
+{
+	assert(t);
+	BTDataType item;
+	scanf("%c", &item);
+	if (item == '#') {
+		*t = NULL;
+	}
+	else {
+		*t = (BinTreeNode *)malloc(sizeof(BinTreeNode));
+		assert(*t);
+
+		(*t)->val = item;
+		BinTreeCreate(&(*t)->left_tree);
+		BinTreeCreate(&(*t)->right_tree);
+	}
+}
+
+BinTree BinTreeCreate_2()
+{
+	BTDataType item;
+	scanf("%c", &item);
+	if (item == '#') {
+		return NULL;
+	}
+	else {
+		BinTreeNode *t = (BinTreeNode *)malloc(sizeof(BinTreeNode));
+		assert(t);
+		t->val = item;
+		t->left_tree = BinTreeCreate_2();
+		t->right_tree = BinTreeCreate_2();
+		return t;
+	}
+}
+
+BinTree BinTreeCreate_1(BTDataType *a, int *i)//二叉树的字符串创建
 {
 	if (a[*i] == '#' || a[*i] == '\0'){
 		return NULL;
 	}
-	BinTreeNode *t = (BinTreeNode *)malloc(sizeof(BinTreeNode));//申请节点
-	assert(t != NULL);
+	else {
+		BinTreeNode *t = (BinTreeNode *)malloc(sizeof(BinTreeNode));//申请节点
+		assert(t != NULL);
 
-	t->val = a[*i];
-	(*i)++;
+		t->val = a[*i];
+		(*i)++;
 
-	t->left_tree = BinTreeCreate(a, i);//递归创建左树
-	(*i)++;
-	t->right_tree = BinTreeCreate(a, i);//递归创建右树
+		t->left_tree = BinTreeCreate_1(a, i);//递归创建左树
+		(*i)++;
+		t->right_tree = BinTreeCreate_1(a, i);//递归创建右树
 
-	return t;//返回创建好的二叉树
+		return t;//返回创建好的二叉树
+	}
+}
+
+void BinTreeVLR(BinTree t)
+{
+	if (t != NULL) {
+		printf("%c ", t->val);
+		BinTreeVLR(t->left_tree);
+		BinTreeVLR(t->right_tree);
+	}
+}
+void BinTreeLVR(BinTree t)
+{
+	if (t != NULL)
+	{
+		BinTreeLVR(t->left_tree);
+		printf("%c ", t->val);
+		BinTreeLVR(t->right_tree);
+	}
+}
+
+void BinTreeLRV(BinTree t)
+{
+	if (t != NULL)
+	{
+		BinTreeLRV(t->left_tree);
+		BinTreeLRV(t->right_tree);
+		printf("%c ", t->val);
+	}
 }
 
 int BinTreeSize(BinTree t)//节点个数

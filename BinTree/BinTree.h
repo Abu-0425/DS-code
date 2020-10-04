@@ -20,11 +20,15 @@ typedef struct BinTreeNode{
 typedef BinTreeNode* BinTree;
 
 void BinTreeInit(BinTree *t);//初始化二叉树
-BinTree BinTreeCreate(BTDataType *a, int *i);//二叉树的字符串创建
-void BinTreeDestroy(BinTree *t);//摧毁二叉树
+void BinTreeCreate(BinTree *t);//二叉树创建
+BinTree BinTreeCreate_2(); //返回一颗二叉树
+BinTree BinTreeCreate_1(BTDataType *a, int *i);//二叉树的字符串创建
+void BinTreeVLR(BinTree t);
+void BinTreeLVR(BinTree t);
+void BinTreeLRV(BinTree t);
 int BinTreeSize(BinTree t);//节点个数
 BinTreeNode* BinTreeFind(BinTree t, BTDataType data);//二叉树查找
-
+void BinTreeDestroy(BinTree *t);//摧毁二叉树
 
 
 #endif
