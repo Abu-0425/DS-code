@@ -96,6 +96,18 @@ int BinTreeSize(BinTree t)//节点个数
 	return 1 + BinTreeSize(t->left_tree) + BinTreeSize(t->right_tree);
 }
 
+int BinTreeHigh(BinTree t)
+{
+	if (t == NULL) {
+		return 0;
+	}
+	else {
+		int high_l = BinTreeHigh(t->left_tree);
+		int high_r = BinTreeHigh(t->right_tree);
+		return (high_l > high_r ? high_l : high_r) + 1;
+	}
+}
+
 BinTreeNode* BinTreeFind(BinTree t, BTDataType data)//二叉树查找
 {
 	if (t == NULL || t->val == data){

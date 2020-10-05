@@ -20,11 +20,12 @@ int main()
 	data = 'A';
 	BinTreeNode *p = BinTreeFind(bt, data);//查找某个节点
 	if (p != NULL) {
-		printf("该节点存在!\n");
+		printf("%c这个节点存在!\n",data);
 	}
 	else {
-		printf("该节点不存在!\n");
+		printf("%c这个节点不存在!\n",data);
 	}
+	printf("high = %d\n", BinTreeHigh(bt));
 
 	BinTreeDestroy(&bt);
 	system("pause");
